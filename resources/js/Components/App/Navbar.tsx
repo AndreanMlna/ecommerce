@@ -54,7 +54,7 @@ function Navbar() {
       </ul>
     </div>}
     {!user && <>
-        <Link href={route('login')} className={"btn"}>Login</Link>
+        <Link href={route('login')} className={"btn btn-secondary bg-base-200"}>Login</Link>
         <Link href={route('register')} className='btn btn-primary'>Register</Link>
     </>}
   </div>
