@@ -2,84 +2,92 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class CategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $categories = [
-            [
+        // NONAKTIFKAN FOREIGN KEY CONSTRAINT SAAT TRUNCATE
+        DB::statement('PRAGMA foreign_keys = OFF;');
+        DB::table('categories')->truncate();
+        DB::statement('PRAGMA foreign_keys = ON;');
+
+        $now = now();
+
+        $departments = [
+            1 => [
                 'name' => 'Electronics',
-                'department_id' => 1,
-                'parent_id' => null,
-                'active' => true,
-                'created_at' => now(),
-                'updated_at' => now()
+                'children' => [
+                    'Computers' => ['Laptops', 'Desktops'],
+                    'Smartphones' => ['Android', 'Iphone'],
+                ]
             ],
-            [
+            2 => [
                 'name' => 'Fashion',
-                'department_id' => 2,
-                'parent_id' => null,
-                'active' => true,
-                'created_at' => now(),
-                'updated_at' => now()
+                'children' => [
+                    'Men Clothing' => ['Shirts', 'Pants'],
+                    'Women Clothing' => ['Dresses', 'Skirts'],
+                ]
             ],
-            [
-                'name' => 'Computers',
-                'department_id' => 1,
-                'parent_id' => 1,
-                'active' => true,
-                'created_at' => now(),
-                'updated_at' => now()
+            3 => [
+                'name' => 'Book & Audible',
+                'children' => [
+                    'Fiction' => ['Novels'],
+                    'Non-fiction' => ['Science'],
+                ]
             ],
-            [
-                'name' => 'Smartphones',
-                'department_id' => 1,
-                'parent_id' => 1,
-                'active' => true,
-                'created_at' => now(),
-                'updated_at' => now()
+            4 => [
+                'name' => 'Health & Beauty',
+                'children' => [
+                    'Makeup' => ['Foundation'],
+                    'Skincare' => ['Moisturizer'],
+                ]
             ],
-            [
-                'name' => 'Laptops',
-                'department_id' => 1,
-                'parent_id' => 3,
-                'active' => true,
-                'created_at' => now(),
-                'updated_at' => now()
-            ],
-            [
-                'name' => 'Desktops',
-                'department_id' => 1,
-                'parent_id' => 3,
-                'active' => true,
-                'created_at' => now(),
-                'updated_at' => now()
-            ],
-            [
-                'name' => 'Android',
-                'department_id' => 1,
-                'parent_id' => 4,
-                'active' => true,
-                'created_at' => now(),
-                'updated_at' => now()
-            ],
-            [
-                'name' => 'Iphone',
-                'department_id' => 1,
-                'parent_id' => 4,
-                'active' => true,
-                'created_at' => now(),
-                'updated_at' => now()
+            5 => [
+                'name' => 'Home, Garden & Tools',
+                'children' => [
+                    'Furniture' => ['Chairs'],
+                    'Tools' => ['Hand Tools'],
+                ]
             ],
         ];
 
-        DB::table('categories')->insert($categories);
+        foreach ($departments as $departmentId => $data) {
+            // Level 1: kategori utama
+            $parentId = DB::table('categories')->insertGetId([
+                'name' => $data['name'],
+                'department_id' => $departmentId,
+                'parent_id' => null,
+                'active' => true,
+                'created_at' => $now,
+                'updated_at' => $now
+            ]);
+
+            foreach ($data['children'] as $childName => $subChildren) {
+                // Level 2: kategori anak
+                $childId = DB::table('categories')->insertGetId([
+                    'name' => $childName,
+                    'department_id' => $departmentId,
+                    'parent_id' => $parentId,
+                    'active' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now
+                ]);
+
+                // Level 3: subkategori
+                foreach ($subChildren as $subName) {
+                    DB::table('categories')->insert([
+                        'name' => $subName,
+                        'department_id' => $departmentId,
+                        'parent_id' => $childId,
+                        'active' => true,
+                        'created_at' => $now,
+                        'updated_at' => $now
+                    ]);
+                }
+            }
+        }
     }
 }
